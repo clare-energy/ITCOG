@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from bs4 import BeautifulSoup, Comment
 from urllib.parse import urljoin, urlparse
+from datetime import datetime
 import httpx
 import re
 import logging
@@ -177,6 +178,12 @@ body { max-width: 1290px; }
   text-decoration: none;
 }
 .card a:hover { color: var(--red); }
+.card-date {
+  font-size: 0.78rem;
+  color: #888;
+  font-family: Arial, sans-serif;
+  margin-top: 0.3rem;
+}
 """
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -205,11 +212,23 @@ def is_clutter(tag) -> bool:
     return bool(CLUTTER_RE.search(classes + " " + tag.get("id", "")))
 
 
+def date_from_href(href: str) -> str:
+    """Extract publication date from an article URL like /2026/06/01/slug/."""
+    m = ARTICLE_URL_RE.search(href)
+    if not m:
+        return ""
+    try:
+        dt = datetime.strptime(m.group(0), "/%Y/%m/%d/")
+        return dt.strftime("%-d %b")
+    except ValueError:
+        return ""
+
+
 def extract_home_grid(soup: BeautifulSoup, page_url: str) -> str:
     """Extract article cards from the raw soup (call BEFORE any cleaning)."""
     cards = soup.find_all("div", class_="b-flex-promo-card")
     seen: set[str] = set()
-    items: list[tuple[str, str, str]] = []
+    items: list[tuple[str, str, str, str]] = []
 
     for card in cards:
         # Image links carry aria-hidden="true" — skip them
@@ -225,14 +244,16 @@ def extract_home_grid(soup: BeautifulSoup, page_url: str) -> str:
             continue
         seen.add(href)
         section = href.strip("/").split("/")[0].replace("-", " ").title()
-        items.append((href, title, section))
+        date = date_from_href(href)
+        items.append((href, title, section, date))
 
     rows = "\n".join(
         f'<div class="card">'
         f'<div class="card-section">{section}</div>'
         f'<a href="{href}">{title}</a>'
-        f"</div>"
-        for href, title, section in items
+        + (f'<div class="card-date">{date}</div>' if date else "")
+        + f"</div>"
+        for href, title, section, date in items
     )
     return f'<div class="cards-grid">\n{rows}\n</div>' if rows else ""
 
