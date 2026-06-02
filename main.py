@@ -135,6 +135,18 @@ figcaption { font-size: 0.8rem; color: #555; font-family: Arial, sans-serif; }
 table { border-collapse: collapse; width: 100%; margin: 0.5rem 0; }
 td, th { border: 1px solid #ddd; padding: 0.3rem 0.5rem; text-align: left; }
 th { background: #f4f4f4; }
+a[href^="/tags/"] {
+  display: inline-block;
+  margin: 0.2rem 0.3rem 0.2rem 0;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid #ddd;
+  background: #f7f7f7;
+  font-size: 0.8rem;
+  font-family: Arial, sans-serif;
+  color: #444;
+  text-decoration: none;
+}
+a[href^="/tags/"]:hover { background: #eee; color: var(--red); }
 """
 
 ARTICLE_CSS = """\
@@ -142,7 +154,8 @@ body { max-width: 1290px; }
 article p, article li, article blockquote { font-size: 1.5rem; line-height: 1.7; }
 article h1 { font-size: 2.25rem; }
 article h2 { font-size: 1.8rem; }
-article h3 { font-size: 1.5rem; }
+article h3 { font-size: 1.65rem; }
+article h4, article h5, article h6 { font-size: 1.3rem; }
 """
 
 LISTING_CSS = """\
